@@ -1,0 +1,156 @@
+<html>
+  <head>
+    <title>Graph based Immutable Build Systems</title>
+    <style>
+      /* ripped from https://bestmotherfucking.website */
+      /* just made the font serif instead of sans-serif */
+      body {
+        margin:1em auto;
+        max-width:40em;
+        padding:0.62em;
+        font:1.2em/1.62em serif;
+      }
+
+      h1,h2,h3 {
+        line-height:1.2em;
+      }
+
+      @media print {
+        body {
+          max-width:none;
+        }
+      }
+    </style>
+</html>
+<body>
+  <h1>Graph based Immutable Build Systems</h1>
+  <p>
+    <strong>TL;WR:</strong>
+    Graph based Immutable Build Systems (GIBS)<sup>1</sup> are here to stay. 
+    We believe that they provide a superior way to build software.
+  </p>
+  <p>
+    This purpose of this manifesto is twofold:
+  </p>
+
+  <ol>
+    <li>
+      It tries to <a href="#why">convince you</a> that this is indeed, building software with a GIBS has advantages.
+    </li>
+    <li>
+      These systems put some constraints on how a package manager can interact with the global
+      state and the programmer.
+      We <a href="#package-manager-suggestions">provide some suggestions</a> on which role a package manager for some programming language
+      should play, and which features could improve the experience of building
+      software in an arbirary language with a GIBS.
+    </li>
+  </ol>
+  <p>
+    1: eg. Nix, Guix, Bazel, Habitat.sh
+  </p>
+
+  <h2 id="why">Why Graph based Immutable Build Systems</h2>
+  <p>
+    Graph based immutable build systems are concerned with building and managing the dependencies of
+    a single program, several programs or even entire operating systems.
+  </p>
+  <p>
+    The core principle that all these systems share is that it is impossible to have implicit
+    dependencies; only explicitly specified dependencies can be used. We distinguish between
+    build-time dependencies (like a compiler) and run-time dependencies (a shared library, or a
+    package for your favorite programming language).
+  </p>
+  <p>
+    This isolation is achieved by storing each created artifact in an immutable location,
+    and only making it availble when explicitly requested.
+    This is very hard to accomplish in traditional software distributions, where programs and 
+    libraries are installed in well known locations, such as <code>/usr/bin</code>.
+  </p>
+  <p>
+    This strict isolation is the opposite of the approach taken by e.g. Docker, where the motto
+    appears to be "anything goes, as long as it works".
+  </p>
+  <p>
+    One could argue that Docker is advocating the use of <code>goto</code>, whilst graph based
+    dependencies are arguing for the more limited (but saner) structured programming approach.
+  </p>
+  <p>
+    These imposed limitations --having to specify both run-time and build-time dependencies--,
+    pay off in multiple ways. The full dependency graph will be come queryable, allowing automated
+    tools to take advantage of this information to e.g. automatically check for vulnerabilities
+    based on semantical information, instead of scanning for binary patterns.
+    An additional feature in this context is that not only we can detect if our system contains 
+    some vulnerable piece of software, but we also know by which components it is used.
+  </p>
+  <p>
+    Each run-time dependency can be shipped separately to the production environment; no
+    need to copy your gigabyte sized layer containing the same packages over and over again,
+    because you changed a one kilobyte dependency. Your build-time dependencies will never
+    be shipped to production.
+    Futhermore, because the exactly build dependencies for your application are specified,
+    we can automatically create a development environment that is identical to the CI/build
+    environment, on your local machine, without containers or VM's. <sup>2</sup>
+  </p>
+
+  <p>
+    2: of course you'd need to be running linux to fully take advantage of this. However,
+    nixpkgs also runs on top of OSX. You'll be able to get closer to prod-parity than ever before,
+    because the exact versions of the used software will be pinned to the same values. However,
+    OSX != Linux, so you might experience some subtle semantic issues.
+  </p>
+
+  <h3>More resources</h3>
+  <ul>
+    <li><a href="https://nixos.org">NixOS</a></li>
+    <li><a href="https://bazel.build">Bazel</a></li>
+    <li><a href="https://habitat.sh">Habitat</a></li>
+    <li>
+      <a href="https://fosdem.org/2017/schedule/event/layervsdependency/">
+        Managing dependencies in containers (FOSDEM '17 talk)
+      </a>
+    </li>
+  </ul>
+
+  <h2 id="package-manager-suggestions">Package managers & GIBS</h2>
+  <h3>GIBS unifies OS and dev package management</h3>
+  <p>
+    In most (operating) systems package managers thar are used to manage operating systems and the
+    ones used by programmers to manage the dependencies of theyr programming languages are at war.
+  </p>
+  <p>
+    The operating systems prefer to have more stable, less frequent releases with long support
+    lifetimes, and one set of libraries for the whole operating system.
+    Most non-gibs operating systems do not support installing more than one version of e.g.
+    <code>glibc</code> or <code>openssl</code>.
+  </p>
+  <p>
+    In contrast, developers often prefer to have more recent versions of libraries to work against.
+    They might have to work with pieces of software that require older (or newer) versions
+    of libraries than that are provided by the operating system.
+  </p>
+  <p>
+   This conflict is hard to reconcile. Quite often, the libraries used by developers resort to including
+   e.g. <code>openssl</code> or <code>libxml</code> directly in their source repositories.
+   This will potentially lead to an umanagable set of different versions of libraries.
+   TODO: example nokogiri ruby
+  </p>
+  <p>
+    In a GIBS, there is no black-and-white distiction on which libraries are provided by the
+    base operating system, and which are packaged by the programmers themselves.
+  </p>
+  <p>
+    By having the graph model, packages can be inspected and it can be automatically verified
+    that e.g. no old versions of <code>openssl</code>are in use.
+  </p>
+
+  <h3>How most package managers for programming languages works today</h3>
+  <p>
+    Most programming languages today, offer two ways to install libraries managed by those tools.
+  </p>
+</body>
+
+<!-- 
+  - https://github.com/rust-lang/rust-roadmap/issues/12#issuecomment-279098088
+
+  - global context is "just another package"
+-->
